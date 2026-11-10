@@ -66,10 +66,12 @@ Safety additions for this prototype:
 
     payload = {
         "model": model_from_notes(),
+        "reasoning": {"effort": "none"},
         "instructions": instructions,
         "input": user_message,
         "tools": [{"type": "web_search"}],
-        "max_output_tokens": 500,
+        "text": {"verbosity": "low"},
+        "max_output_tokens": 320,
     }
     request = urllib.request.Request(
         "https://api.openai.com/v1/responses",
