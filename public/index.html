@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gilgamesh the Sleeper</title>
+    <meta name="description" content="A gentle, guided sleep reset for a stressed mind." />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Gilgamesh the Sleeper home">
+          <span class="brand-mark">☾</span>
+          <span>Gilgamesh<span class="brand-soft"> the Sleeper</span></span>
+        </a>
+        <span class="prototype-pill">Version 1 prototype</span>
+      </header>
+
+      <section class="hero" aria-labelledby="page-title">
+        <div class="hero-copy">
+          <p class="eyebrow">A calmer night starts with one small step</p>
+          <h1 id="page-title">Let’s make tonight feel a little lighter.</h1>
+          <p class="hero-text">Tell Gilgamesh what is keeping you awake. It makes a short, personal wind-down plan instead of asking you to search through a huge library of random sounds.</p>
+          <div class="difference-row" aria-label="What makes this different">
+            <span>Guided</span><span>Personal</span><span>Gentle</span>
+          </div>
+        </div>
+        <div class="moon-card" aria-hidden="true">
+          <div class="moon">☾</div>
+          <p>Rest is not a race.</p>
+        </div>
+      </section>
+
+      <section class="coach-card" aria-labelledby="coach-title">
+        <div class="section-heading">
+          <p class="step-label">ONE CONVERSATION</p>
+          <h2 id="coach-title">What kind of night are you having?</h2>
+          <p>Pick the closest match. There is no wrong answer.</p>
+        </div>
+        <form id="coach-form">
+          <div class="choice-grid">
+            <label class="choice-card">
+              <input type="radio" name="concern" value="My mind is busy with worries or an argument" required />
+              <span class="choice-icon">↯</span>
+              <span><strong>Busy mind</strong><small>Worries, stress, or an argument</small></span>
+            </label>
+            <label class="choice-card">
+              <input type="radio" name="concern" value="I used a screen too late and cannot wind down" />
+              <span class="choice-icon">▣</span>
+              <span><strong>Late screen time</strong><small>TV, games, or a phone before bed</small></span>
+            </label>
+            <label class="choice-card">
+              <input type="radio" name="concern" value="My body feels tense and I need help calming down" />
+              <span class="choice-icon">◌</span>
+              <span><strong>Tense body</strong><small>Hard to relax or settle</small></span>
+            </label>
+          </div>
+          <label class="extra-note" for="extra-note">
+            <span>Want to add one little detail? <em>Optional</em></span>
+            <textarea id="extra-note" name="extra" rows="2" maxlength="800" placeholder="Example: I have school tomorrow and I feel nervous..."></textarea>
+          </label>
+          <button id="coach-button" type="submit">Make my gentle plan <span>→</span></button>
+          <p class="form-note">Your answer stays on this computer. The AI is for helpful ideas, not medical care.</p>
+        </form>
+
+        <div id="thinking" class="thinking" hidden>
+          <span class="spinner"></span>
+          <span>Thinking… making a plan for this kind of night.</span>
+        </div>
+        <div id="result" class="result" hidden aria-live="polite">
+          <div class="result-heading"><span class="result-icon">✦</span><div><p class="step-label">YOUR GUIDED RESET</p><h2>A small plan for right now</h2></div></div>
+          <div id="answer" class="answer"></div>
+          <div class="safety-note"><strong>Keep this in mind:</strong> If sleep problems keep happening or you feel unwell, talk with a trusted adult or qualified healthcare professional.</div>
+          <button id="start-over" class="secondary-button" type="button">Try a different concern</button>
+        </div>
+        <div id="error" class="error-message" hidden role="alert"></div>
+      </section>
+
+      <section class="local-section" aria-labelledby="local-title">
+        <div><p class="step-label">YOUR LOCAL NOTES</p><h2 id="local-title">Small steps you have tried</h2><p>These notes are saved only in this browser for now.</p></div>
+        <div id="session-list" class="session-list"></div>
+      </section>
+
+      <footer><span>Gilgamesh the Sleeper</span><span>Built for a calmer tomorrow</span></footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

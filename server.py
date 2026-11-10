@@ -1,0 +1,70 @@
+import json
+import mimetypes
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlparse
+
+from ask_openai import MissingKeyError, ask_openai
+
+ROOT = Path(__file__).parent
+PORT = 3000
+
+
+class AppHandler(BaseHTTPRequestHandler):
+    def log_message(self, format, *args):
+        if self.path != "/api/sleep-coach":
+            super().log_message(format, *args)
+
+    def send_json(self, status, payload):
+        body = json.dumps(payload).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_POST(self):
+        if self.path != "/api/sleep-coach":
+            self.send_json(404, {"error": "Not found"})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+            if length > 8000:
+                raise ValueError("body-too-large")
+            body = json.loads(self.rfile.read(length) or "{}")
+            concern = body.get("concern", "").strip()
+            extra = body.get("extra", "").strip()
+            if not concern or len(concern) > 500 or len(extra) > 800:
+                self.send_json(400, {"error": "Please choose a sleep concern first."})
+                return
+            message = f"The person chose this sleep concern: {concern}"
+            if extra:
+                message += f"\nTheir extra note: {extra}"
+            message += "\nPlease give the one-time guided plan now."
+            self.send_json(200, {"answer": ask_openai(message)})
+        except MissingKeyError:
+            self.send_json(502, {"error": "missing-key"})
+        except Exception:
+            self.send_json(502, {"error": "unavailable"})
+
+    def do_GET(self):
+        requested = urlparse(self.path).path
+        if requested == "/":
+            requested = "/index.html"
+        file_path = (ROOT / "public" / requested.lstrip("/")).resolve()
+        public_root = (ROOT / "public").resolve()
+        if public_root not in file_path.parents or not file_path.is_file():
+            self.send_error(404, "Not found")
+            return
+        body = file_path.read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", mimetypes.guess_type(file_path.name)[0] or "application/octet-stream")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+if __name__ == "__main__":
+    server = ThreadingHTTPServer(("127.0.0.1", PORT), AppHandler)
+    print(f"Gilgameshthesleeper.com is running at http://localhost:{PORT}")
+    server.serve_forever()
