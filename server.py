@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from ask_openai import MissingKeyError, ask_openai
+from ask_openai import MissingKeyError, stream_openai
 
 ROOT = Path(__file__).parent
 PORT = 3000
@@ -22,6 +22,11 @@ class AppHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def send_event(self, payload):
+        body = f"data: {json.dumps(payload)}\n\n".encode()
+        self.wfile.write(body)
+        self.wfile.flush()
 
     def do_POST(self):
         if self.path != "/api/sleep-coach":
@@ -41,7 +46,19 @@ class AppHandler(BaseHTTPRequestHandler):
             if extra:
                 message += f"\nTheir extra note: {extra}"
             message += "\nPlease give the one-time guided plan now."
-            self.send_json(200, {"answer": ask_openai(message)})
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("Connection", "keep-alive")
+            self.end_headers()
+            try:
+                for delta in stream_openai(message):
+                    self.send_event({"type": "delta", "text": delta})
+                self.send_event({"type": "done"})
+            except MissingKeyError:
+                self.send_event({"type": "error", "error": "missing-key"})
+            except Exception:
+                self.send_event({"type": "error", "error": "unavailable"})
         except MissingKeyError:
             self.send_json(502, {"error": "missing-key"})
         except Exception:

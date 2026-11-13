@@ -49,7 +49,7 @@ def model_from_notes():
     return match.group(1) if match else "gpt-5.6-luna"
 
 
-def ask_openai(user_message):
+def openai_request(user_message, stream=False):
     api_key = read_env().get("OPENAI_API_KEY")
     if not api_key or api_key == "paste-your-key-here":
         raise MissingKeyError()
@@ -72,6 +72,7 @@ Safety additions for this prototype:
         "tools": [{"type": "web_search"}],
         "text": {"verbosity": "low"},
         "max_output_tokens": 320,
+        "stream": stream,
     }
     request = urllib.request.Request(
         "https://api.openai.com/v1/responses",
@@ -80,10 +81,14 @@ Safety additions for this prototype:
         method="POST",
     )
     try:
-        with urllib.request.urlopen(request, timeout=75, context=SSL_CONTEXT) as response:
-            data = json.load(response)
+        return urllib.request.urlopen(request, timeout=75, context=SSL_CONTEXT)
     except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as error:
         raise RuntimeError("unavailable") from error
+
+
+def ask_openai(user_message):
+    with openai_request(user_message) as response:
+        data = json.load(response)
 
     answer = data.get("output_text", "").strip()
     if not answer:
@@ -96,3 +101,24 @@ Safety additions for this prototype:
     if not answer:
         raise RuntimeError("empty-response")
     return answer
+
+
+def stream_openai(user_message):
+    with openai_request(user_message, stream=True) as response:
+        for raw_line in response:
+            line = raw_line.decode("utf-8").strip()
+            if not line.startswith("data:"):
+                continue
+            raw_event = line[5:].strip()
+            if raw_event == "[DONE]":
+                return
+            try:
+                event = json.loads(raw_event)
+            except json.JSONDecodeError:
+                continue
+            if event.get("type") == "response.output_text.delta":
+                delta = event.get("delta", "")
+                if delta:
+                    yield delta
+            if event.get("type") == "error":
+                raise RuntimeError("unavailable")

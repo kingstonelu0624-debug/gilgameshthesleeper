@@ -25,6 +25,7 @@ function setLoading(isLoading) {
   if (isLoading) {
     result.hidden = true;
     errorMessage.hidden = true;
+    answer.textContent = "";
   }
 }
 
@@ -46,18 +47,48 @@ form.addEventListener("submit", async (event) => {
   const extra = formData.get("extra") || "";
   if (!concern) return;
   setLoading(true);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000);
 
   try {
     const response = await fetch("/api/sleep-coach", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ concern, extra })
+      body: JSON.stringify({ concern, extra }),
+      signal: controller.signal
     });
-    const data = await response.json();
     if (!response.ok) {
+      const data = await response.json();
       throw new Error(data.error === "missing-key" ? "I cannot reach the sleep guide yet. Please check the OpenAI key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
     }
-    showResult(data.answer);
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let fullAnswer = "";
+    let finished = false;
+    while (!finished) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
+      for (const eventText of events) {
+        const dataLine = eventText.split("\n").find((line) => line.startsWith("data:"));
+        if (!dataLine) continue;
+        const event = JSON.parse(dataLine.slice(5).trim());
+        if (event.type === "delta") {
+          fullAnswer += event.text;
+          thinking.hidden = true;
+          showResult(fullAnswer);
+        }
+        if (event.type === "error") {
+          throw new Error(event.error === "missing-key" ? "I cannot reach the sleep guide yet. Please check the OpenAI key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
+        }
+        if (event.type === "done") finished = true;
+      }
+    }
+    if (!fullAnswer) throw new Error("I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
     renderSessions(saveSession({
       id: crypto.randomUUID(),
       kind: "session",
@@ -66,8 +97,9 @@ form.addEventListener("submit", async (event) => {
       createdAt: "Just now"
     }));
   } catch (error) {
-    showError(error.message || "I could not reach the sleep guide. Please check the key and try again.");
+    showError(error.name === "AbortError" ? "This is taking longer than expected. Please check the key and your internet connection, then try again." : (error.message || "I could not reach the sleep guide. Please check the key and try again."));
   } finally {
+    clearTimeout(timeout);
     setLoading(false);
   }
 });
