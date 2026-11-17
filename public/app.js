@@ -5,6 +5,7 @@ const button = document.querySelector("#coach-button");
 const thinking = document.querySelector("#thinking");
 const result = document.querySelector("#result");
 const answer = document.querySelector("#answer");
+const hamsterPop = document.querySelector("#hamster-pop");
 const errorMessage = document.querySelector("#error");
 const sessionList = document.querySelector("#session-list");
 
@@ -26,6 +27,7 @@ function setLoading(isLoading) {
     result.hidden = true;
     errorMessage.hidden = true;
     answer.textContent = "";
+    hamsterPop.hidden = false;
   }
 }
 
@@ -109,6 +111,10 @@ document.querySelector("#start-over").addEventListener("click", () => {
   errorMessage.hidden = true;
   form.reset();
   document.querySelector("#coach-title").scrollIntoView({ behavior: "smooth", block: "center" });
+});
+
+hamsterPop.addEventListener("click", () => {
+  hamsterPop.hidden = true;
 });
 
 renderSessions();
