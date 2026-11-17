@@ -15,6 +15,7 @@
 - Safety wording is built in: no diagnosis or medication advice, gentle guidance, and a trusted-adult or healthcare-professional suggestion when needed.
 - Two made-up sample stories are included for the demo.
 - Saves on this computer only for now.
+- The main flow now clearly asks how the person slept and sends that sleep report to the AI for bedtime tips.
 
 ## Run it
 
