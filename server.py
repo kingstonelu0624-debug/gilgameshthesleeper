@@ -45,7 +45,7 @@ class AppHandler(BaseHTTPRequestHandler):
             message = f"The person chose this sleep concern: {concern}"
             if extra:
                 message += f"\nTheir extra note: {extra}"
-            message += "\nPlease give the one-time guided plan now."
+            message += "\nPlease give the one-time guided plan now, using fresh wording that fits this concern. Avoid repeating the phrase wind down."
             self.send_response(200)
             self.send_header("Content-Type", "text/event-stream; charset=utf-8")
             self.send_header("Cache-Control", "no-cache")
