@@ -92,7 +92,7 @@ form.addEventListener("submit", async (event) => {
     renderSessions(saveSession({
       id: crypto.randomUUID(),
       kind: "session",
-      label: "Tonight’s guided reset",
+      label: "Tonight: guided reset",
       text: `${concern}${extra ? ` — ${extra}` : ""}`,
       createdAt: "Just now"
     }));

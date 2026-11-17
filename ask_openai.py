@@ -68,6 +68,7 @@ Safety additions for this prototype:
 - Make one short plan with a wind-down step, a calming step, and a next step for tomorrow.
 - Use fresh, concern-specific wording in every answer. Do not repeatedly use the phrase “wind down” or “wind-down”; vary naturally with phrases such as “settle,” “ease into rest,” “slow your thoughts,” or “get ready for sleep.”
 - Do not begin every answer with the same sentence or use the same step names every time.
+- Avoid contractions and possessive forms ending in “'s” or “’s” in the answer. Use full wording such as “it is” and “a person” instead.
 - Mention that this is educational support, not medical care."""
 
     payload = {
