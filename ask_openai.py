@@ -15,6 +15,10 @@ class MissingKeyError(Exception):
     pass
 
 
+class InvalidKeyError(Exception):
+    pass
+
+
 def read_env():
     values = {}
     try:
@@ -82,7 +86,11 @@ Safety additions for this prototype:
     )
     try:
         return urllib.request.urlopen(request, timeout=75, context=SSL_CONTEXT)
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError) as error:
+    except urllib.error.HTTPError as error:
+        if error.code == 401:
+            raise InvalidKeyError() from error
+        raise RuntimeError("unavailable") from error
+    except (urllib.error.URLError, TimeoutError) as error:
         raise RuntimeError("unavailable") from error
 
 

@@ -8,6 +8,7 @@
 - Model with “luna” in its name: `gpt-5.6-luna`.
 - The AI turn uses the model’s fastest reasoning setting and a shorter answer limit so it can respond sooner.
 - The AI answer now streams onto the page as it arrives, with a 30-second timeout instead of an endless loading state.
+- If OpenAI rejects the key, the app now says to replace the key instead of blaming the internet.
 - Safety wording is built in: no diagnosis or medication advice, gentle guidance, and a trusted-adult or healthcare-professional suggestion when needed.
 - Two made-up sample stories are included for the demo.
 - Saves on this computer only for now.

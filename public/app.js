@@ -59,7 +59,7 @@ form.addEventListener("submit", async (event) => {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error === "missing-key" ? "I cannot reach the sleep guide yet. Please check the OpenAI key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
+        throw new Error(data.error === "missing-key" ? "I cannot reach the sleep guide yet. Please add an OpenAI key to .env, then restart the app." : data.error === "invalid-key" ? "The OpenAI key was rejected. Replace the key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
     }
 
     const reader = response.body.getReader();
@@ -83,7 +83,7 @@ form.addEventListener("submit", async (event) => {
           showResult(fullAnswer);
         }
         if (event.type === "error") {
-          throw new Error(event.error === "missing-key" ? "I cannot reach the sleep guide yet. Please check the OpenAI key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
+          throw new Error(event.error === "missing-key" ? "I cannot reach the sleep guide yet. Please add an OpenAI key to .env, then restart the app." : event.error === "invalid-key" ? "The OpenAI key was rejected. Replace the key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
         }
         if (event.type === "done") finished = true;
       }

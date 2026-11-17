@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from ask_openai import MissingKeyError, stream_openai
+from ask_openai import InvalidKeyError, MissingKeyError, stream_openai
 
 ROOT = Path(__file__).parent
 PORT = 3000
@@ -57,6 +57,8 @@ class AppHandler(BaseHTTPRequestHandler):
                 self.send_event({"type": "done"})
             except MissingKeyError:
                 self.send_event({"type": "error", "error": "missing-key"})
+            except InvalidKeyError:
+                self.send_event({"type": "error", "error": "invalid-key"})
             except Exception:
                 self.send_event({"type": "error", "error": "unavailable"})
         except MissingKeyError:
