@@ -69,6 +69,7 @@ Safety additions for this prototype:
 - Use fresh, concern-specific wording in every answer. Do not repeatedly use the phrase “wind down” or “wind-down”; vary naturally with phrases such as “settle,” “ease into rest,” “slow your thoughts,” or “get ready for sleep.”
 - Do not begin every answer with the same sentence or use the same step names every time.
 - Avoid contractions and possessive forms ending in “'s” or “’s” in the answer. Use full wording such as “it is” and “a person” instead.
+- Return plain text only. Do not use Markdown, asterisks, bold text, headings, or code blocks. Never include the characters `*` in the answer.
 - Mention that this is educational support, not medical care."""
 
     payload = {
@@ -101,14 +102,14 @@ def ask_openai(user_message):
     with openai_request(user_message) as response:
         data = json.load(response)
 
-    answer = data.get("output_text", "").strip()
+    answer = data.get("output_text", "").replace("*", "").strip()
     if not answer:
         pieces = []
         for item in data.get("output", []):
             for content in item.get("content", []):
                 if content.get("type") == "output_text" and content.get("text"):
                     pieces.append(content["text"])
-        answer = "\n".join(pieces).strip()
+        answer = "\n".join(pieces).replace("*", "").strip()
     if not answer:
         raise RuntimeError("empty-response")
     return answer
@@ -128,7 +129,7 @@ def stream_openai(user_message):
             except json.JSONDecodeError:
                 continue
             if event.get("type") == "response.output_text.delta":
-                delta = event.get("delta", "")
+                delta = event.get("delta", "").replace("*", "")
                 if delta:
                     yield delta
             if event.get("type") == "error":

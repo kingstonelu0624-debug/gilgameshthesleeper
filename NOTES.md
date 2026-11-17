@@ -11,6 +11,7 @@
 - If OpenAI rejects the key, the app now says to replace the key instead of blaming the internet.
 - AI answers now use varied, concern-specific wording instead of repeating “wind down.”
 - The visual theme is darker, and the AI avoids common `’s` contractions in answers.
+- AI answers are plain text with no asterisks or bold Markdown.
 - Safety wording is built in: no diagnosis or medication advice, gentle guidance, and a trusted-adult or healthcare-professional suggestion when needed.
 - Two made-up sample stories are included for the demo.
 - Saves on this computer only for now.
