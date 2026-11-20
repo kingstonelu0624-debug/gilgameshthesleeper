@@ -83,7 +83,8 @@ form.addEventListener("submit", async (event) => {
           showResult(fullAnswer);
         }
         if (event.type === "error") {
-          throw new Error(event.error === "missing-key" ? "I cannot reach the sleep guide yet. Please add an OpenAI key to .env, then restart the app." : event.error === "invalid-key" ? "The OpenAI key was rejected. Replace the key in .env, then restart the app." : "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
+          const message = typeof event.error === "object" ? event.error.message : event.error;
+          throw new Error(message === "missing-key" ? "I cannot reach the sleep guide yet. Please add the MindDo values to .env, then restart the app." : message === "invalid-key" ? "The AI key was rejected. Replace the MindDo values in .env, then restart the app." : message || "I could not reach the sleep guide. Please check the key and your internet connection, then try again.");
         }
         if (event.type === "done") finished = true;
       }

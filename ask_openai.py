@@ -1,5 +1,7 @@
 import json
 import re
+import shutil
+import subprocess
 import ssl
 import urllib.error
 import urllib.request
@@ -17,6 +19,13 @@ class MissingKeyError(Exception):
 
 class InvalidKeyError(Exception):
     pass
+
+
+class KeygenError(Exception):
+    def __init__(self, message, fix):
+        super().__init__(message)
+        self.message = message
+        self.fix = fix
 
 
 def read_env():
@@ -54,9 +63,7 @@ def model_from_notes():
 
 
 def openai_request(user_message, stream=False):
-    api_key = read_env().get("OPENAI_API_KEY")
-    if not api_key or api_key == "paste-your-key-here":
-        raise MissingKeyError()
+    api_key = get_key_from_minddo()
 
     instructions = f"""{brief_instructions()}
 
@@ -92,10 +99,49 @@ Safety additions for this prototype:
         return urllib.request.urlopen(request, timeout=75, context=SSL_CONTEXT)
     except urllib.error.HTTPError as error:
         if error.code == 401:
-            raise InvalidKeyError() from error
+            try:
+                replacement = get_key_from_minddo(force=True)
+                retry = urllib.request.Request(
+                    "https://api.openai.com/v1/responses",
+                    data=json.dumps(payload).encode(),
+                    headers={"Content-Type": "application/json", "Authorization": f"Bearer {replacement}"},
+                    method="POST",
+                )
+                return urllib.request.urlopen(retry, timeout=75, context=SSL_CONTEXT)
+            except KeygenError as keygen_error:
+                raise keygen_error from error
+            except urllib.error.HTTPError as retry_error:
+                if retry_error.code == 401:
+                    raise InvalidKeyError() from retry_error
+                raise RuntimeError("unavailable") from retry_error
         raise RuntimeError("unavailable") from error
     except (urllib.error.URLError, TimeoutError) as error:
         raise RuntimeError("unavailable") from error
+
+
+def get_key_from_minddo(force=False):
+    node = shutil.which("node")
+    if not node:
+        raise KeygenError("This computer needs Node.js to get the AI key securely.", "Install Node.js, then start the project again.")
+    try:
+        command = [node, str(ROOT / "getKey.mjs")]
+        if force:
+            command.append("--force")
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=20, check=False)
+    except (OSError, subprocess.TimeoutExpired) as error:
+        raise KeygenError("The AI key service took too long to answer.", "Check the MindDo service and internet connection, then try again.") from error
+    if result.returncode != 0:
+        try: details = json.loads(result.stderr or "{}")
+        except json.JSONDecodeError: details = {}
+        raise KeygenError(details.get("message", "The AI key service could not provide a key."), details.get("fix", "Check the MindDo values in .env."))
+    try:
+        details = json.loads(result.stdout)
+        api_key = details["apiKey"]
+    except (json.JSONDecodeError, KeyError) as error:
+        raise KeygenError("The AI key service returned an unexpected reply.", "Check the MindDo service response and try again.") from error
+    if not api_key:
+        raise KeygenError("The AI key service returned an empty key.", "Check the MindDo service configuration.")
+    return api_key
 
 
 def ask_openai(user_message):

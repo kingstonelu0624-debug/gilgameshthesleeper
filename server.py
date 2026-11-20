@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
-from ask_openai import InvalidKeyError, MissingKeyError, stream_openai
+from ask_openai import InvalidKeyError, KeygenError, MissingKeyError, stream_openai
 
 ROOT = Path(__file__).parent
 PORT = 3000
@@ -58,11 +58,17 @@ class AppHandler(BaseHTTPRequestHandler):
             except MissingKeyError:
                 self.send_event({"type": "error", "error": "missing-key"})
             except InvalidKeyError:
-                self.send_event({"type": "error", "error": "invalid-key"})
+                self.send_event({"type": "error", "error": {"message": "OpenAI rejected the AI key.", "fix": "Replace the MindDo key or token, then try again."}})
+            except KeygenError as error:
+                print(error.fix)
+                self.send_event({"type": "error", "error": {"message": error.message, "fix": error.fix}})
             except Exception:
-                self.send_event({"type": "error", "error": "unavailable"})
+                self.send_event({"type": "error", "error": {"message": "The sleep guide could not answer right now.", "fix": "Check the MindDo service and internet connection, then try again."}})
         except MissingKeyError:
             self.send_json(502, {"error": "missing-key"})
+        except KeygenError as error:
+            print(error.fix)
+            self.send_json(502, {"error": {"message": error.message, "fix": error.fix}})
         except Exception:
             self.send_json(502, {"error": "unavailable"})
 
