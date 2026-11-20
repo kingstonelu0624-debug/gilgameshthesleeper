@@ -1,8 +1,7 @@
 {
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/api/sleep-coach", "dest": "/api/sleep-coach.js" },
     { "src": "/", "dest": "/public/index.html" },
-    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ]
 }
