@@ -18,9 +18,8 @@ async function readEnv() {
     KEYGEN_URL: process.env.KEYGEN_URL,
     KEYGEN_TOKEN: process.env.KEYGEN_TOKEN,
   };
-  let text;
-  try { text = await fs.readFile(path.join(ROOT, ".env"), "utf8"); }
-  catch { throw new KeygenError("The AI key service is not set up yet.", "Add KEYGEN_URL and KEYGEN_TOKEN to the local .env file."); }
+  let text = "";
+  try { text = await fs.readFile(path.join(ROOT, ".env"), "utf8"); } catch {}
   for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     const match = line.match(/^(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*)$/i);
