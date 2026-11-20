@@ -14,7 +14,10 @@ export class KeygenError extends Error {
 }
 
 async function readEnv() {
-  const values = {};
+  const values = {
+    KEYGEN_URL: process.env.KEYGEN_URL,
+    KEYGEN_TOKEN: process.env.KEYGEN_TOKEN,
+  };
   let text;
   try { text = await fs.readFile(path.join(ROOT, ".env"), "utf8"); }
   catch { throw new KeygenError("The AI key service is not set up yet.", "Add KEYGEN_URL and KEYGEN_TOKEN to the local .env file."); }
@@ -22,14 +25,15 @@ async function readEnv() {
     const line = raw.trim();
     const match = line.match(/^(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*)$/i);
     if (!match) continue;
-    values[match[1]] = match[2].trim().replace(/^("|')(.*)\1$/, "$2");
+    if (!values[match[1]]) values[match[1]] = match[2].trim().replace(/^("|')(.*)\1$/, "$2");
   }
   return values;
 }
 
 function stillValid(entry) { return entry && Date.now() < entry.expiresAt; }
 
-export async function getKey() {
+export async function getKey(force = false) {
+  if (force) cached = null;
   if (stillValid(cached)) return cached.apiKey;
   const env = await readEnv();
   const keygenUrl = env.KEYGEN_URL;

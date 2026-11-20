@@ -26,6 +26,13 @@ From this folder, run:
 
 Then open [http://localhost:3000](http://localhost:3000).
 
+## Put it online with Vercel
+
+- Vercel serves the page from `public/` and runs `api/sleep-coach.js` as the small server function.
+- The online function imports the server-only `getKey()` helper. It reads `KEYGEN_URL` and `KEYGEN_TOKEN` from Vercel Project Settings environment variables.
+- Add `KEYGEN_URL` and `KEYGEN_TOKEN` in Vercel for the Production environment (and Preview if you want preview links to work). No other Vercel setting is required.
+- Browser saving remains localStorage, so each browser keeps its own data.
+
 ## Maybe Later
 
 - Add voice input and voice playback.
